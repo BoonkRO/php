@@ -2,9 +2,13 @@
 include("assets/php/database.php"); 
 include("assets/php/class.acl.php");
 
-$userID = $_GET['userID'];
+$userID = isset($_GET['userID']) ? $_GET['userID'] : "" ;
 $_SESSION['userID'] = 1;
-$myACL = new ACL();
+if(isset($_GET['userID'])){
+	$myACL = new ACL($_GET['userID']);
+}else{
+	$myACL = new ACL();
+}
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -14,11 +18,14 @@ $myACL = new ACL();
 </head>
 <body>
 <div id="header"></div>
-<div id="adminButton"><a href="admin/">Admin Screen</a></div>
+<?php if (isset($_GET['userID']) && $myACL->hasPermission('access_admin') == true) { ?>
+	<div id="adminButton"><a href="admin/">Admin Screen</a></div>
+<?php } ?>
+
 <div id="page">
 	<h2>Permissions for <?= $myACL->getUsername($userID); ?>:</h2>
-	<? 
-		$userACL = new ACL($userID);
+	<?php
+	$userACL = new ACL($userID);
 		$aPerms = $userACL->getAllPerms('full');
 		foreach ($aPerms as $k => $v)
 		{
@@ -28,18 +35,19 @@ $myACL = new ACL();
 			{
 				echo "allow.png";
 				$pVal = "Allow";
-			} else {
+			} else{
 				echo "deny.png";
+			} {
 				$pVal = "Deny";
 			}
 			echo "\" width=\"16\" height=\"16\" alt=\"$pVal\" /><br />";
 		}
 	?>
     <h3>Change User:</h3>
-    <? 
+    <?php
 		$strSQL = "SELECT * FROM `users` ORDER BY `Username` ASC";
-		$data = mysql_query($strSQL);
-		while ($row = mysql_fetch_assoc($data))
+		$data = mysqli_query($link, $strSQL);
+		while ($row = mysqli_fetch_assoc($data))
 		{
 			echo "<a href=\"?userID=" . $row['ID'] . "\">" . $row['username'] . "</a><br />";
 		}

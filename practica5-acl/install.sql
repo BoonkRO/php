@@ -1,4 +1,4 @@
-DROP TABLE `permissions` ,`roles` ,`role_perms` ,`users` ,`user_perms` ,`user_roles`, `app` ;
+-- DROP TABLE `permissions` ,`roles` ,`role_perms` ,`users` ,`user_perms` ,`user_roles`, `app` ;
 CREATE TABLE `permissions` (`ID` bigint(20) unsigned zerofill NOT NULL auto_increment,`permKey` varchar(30) NOT NULL,`permName` varchar(30) NOT NULL, PRIMARY KEY  (`ID`),UNIQUE KEY `permKey` (`permKey`)) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 CREATE TABLE `roles` (`ID` bigint(20) unsigned zerofill NOT NULL auto_increment,`roleName` varchar(20) NOT NULL,PRIMARY KEY  (`ID`), UNIQUE KEY `roleName` (`roleName`)) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 CREATE TABLE `role_perms` (`ID` bigint(20) unsigned zerofill NOT NULL auto_increment,`roleID` bigint(20) NOT NULL,`permID` bigint(20) NOT NULL,`value` tinyint(1) NOT NULL default '0',`addDate` datetime NOT NULL, PRIMARY KEY  (`ID`),UNIQUE KEY `roleID_2` (`roleID`,`permID`)) ENGINE=InnoDB DEFAULT CHARSET=latin1;

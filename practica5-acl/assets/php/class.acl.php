@@ -1,12 +1,12 @@
 <?php
-
 	class ACL
 	{
 		var $perms = array();		//Array : Stores the permissions for the user
 		var $userID = 0;			//Integer : Stores the ID of the current user
 		var $userRoles = array();	//Array : Stores the roles of the current user
+		var $db_connection = null; //Stores the db connection
 		
-		function __constructor($userID = '')
+		function __construct($userID = '')
 		{
 			if ($userID != '')
 			{
@@ -14,13 +14,22 @@
 			} else {
 				$this->userID = floatval($_SESSION['userID']);
 			}
-			$this->userRoles = $this->getUserRoles('ids');
-			$this->buildACL();
+			$link = new mysqli('localhost', 'root', '', 'acl_test');
+			if ($link->connect_error != null) {   
+				$hasDB = false;
+				die("Could not connect to the MySQL server at localhost.");
+			} else {   
+				$hasDB = true;
+				mysqli_select_db($link, 'acl_test');
+				$this->db_connection = $link;
+				$this->userRoles = $this->getUserRoles('ids');
+				$this->buildACL();
+			}
 		}
 		
 		function ACL($userID = '')
 		{
-			$this->__constructor($userID);
+			$this->__construct($userID);
 			//crutch for PHP4 setups
 		}
 		
@@ -38,33 +47,33 @@
 		function getPermKeyFromID($permID)
 		{
 			$strSQL = "SELECT `permKey` FROM `permissions` WHERE `ID` = " . floatval($permID) . " LIMIT 1";
-			$data = mysql_query($strSQL);
-			$row = mysql_fetch_array($data);
+			$data = mysqli_query($this->db_connection, $strSQL);
+			$row = mysqli_fetch_array($data);
 			return $row[0];
 		}
 		
 		function getPermNameFromID($permID)
 		{
 			$strSQL = "SELECT `permName` FROM `permissions` WHERE `ID` = " . floatval($permID) . " LIMIT 1";
-			$data = mysql_query($strSQL);
-			$row = mysql_fetch_array($data);
+			$data = mysqli_query($this->db_connection, $strSQL);
+			$row = mysqli_fetch_array($data);
 			return $row[0];
 		}
 		
 		function getRoleNameFromID($roleID)
 		{
 			$strSQL = "SELECT `roleName` FROM `roles` WHERE `ID` = " . floatval($roleID) . " LIMIT 1";
-			$data = mysql_query($strSQL);
-			$row = mysql_fetch_array($data);
+			$data = mysqli_query($this->db_connection, $strSQL);
+			$row = mysqli_fetch_array($data);
 			return $row[0];
 		}
 		
 		function getUserRoles()
 		{
 			$strSQL = "SELECT * FROM `user_roles` WHERE `userID` = " . floatval($this->userID) . " ORDER BY `addDate` ASC";
-			$data = mysql_query($strSQL);
+			$data = mysqli_query($this->db_connection, $strSQL);
 			$resp = array();
-			while($row = mysql_fetch_array($data))
+			while($row = mysqli_fetch_array($data))
 			{
 				$resp[] = $row['roleID'];
 			}
@@ -75,9 +84,9 @@
 		{
 			$format = strtolower($format);
 			$strSQL = "SELECT * FROM `roles` ORDER BY `roleName` ASC";
-			$data = mysql_query($strSQL);
+			$data = mysqli_query($this->db_connection, $strSQL);
 			$resp = array();
-			while($row = mysql_fetch_array($data))
+			while($row = mysqli_fetch_array($data))
 			{
 				if ($format == 'full')
 				{
@@ -93,9 +102,9 @@
 		{
 			$format = strtolower($format);
 			$strSQL = "SELECT * FROM `permissions` ORDER BY `permName` ASC";
-			$data = mysql_query($strSQL);
+			$data = mysqli_query($this->db_connection, $strSQL);
 			$resp = array();
-			while($row = mysql_fetch_assoc($data))
+			while($row = mysqli_fetch_assoc($data))
 			{
 				if ($format == 'full')
 				{
@@ -115,9 +124,9 @@
 			} else {
 				$roleSQL = "SELECT * FROM `role_perms` WHERE `roleID` = " . floatval($role) . " ORDER BY `ID` ASC";
 			}
-			$data = mysql_query($roleSQL);
+			$data = mysqli_query($this->db_connection, $roleSQL);
 			$perms = array();
-			while($row = mysql_fetch_assoc($data))
+			while($row = mysqli_fetch_assoc($data))
 			{
 				$pK = strtolower($this->getPermKeyFromID($row['permID']));
 				if ($pK == '') { continue; }
@@ -134,9 +143,9 @@
 		function getUserPerms($userID)
 		{
 			$strSQL = "SELECT * FROM `user_perms` WHERE `userID` = " . floatval($userID) . " ORDER BY `addDate` ASC";
-			$data = mysql_query($strSQL);
+			$data = mysqli_query($this->db_connection, $strSQL);
 			$perms = array();
-			while($row = mysql_fetch_assoc($data))
+			while($row = mysqli_fetch_assoc($data))
 			{
 				$pK = strtolower($this->getPermKeyFromID($row['permID']));
 				if ($pK == '') { continue; }
@@ -181,8 +190,8 @@
 		function getUsername($userID)
 		{
 			$strSQL = "SELECT `username` FROM `users` WHERE `ID` = " . floatval($userID) . " LIMIT 1";
-			$data = mysql_query($strSQL);
-			$row = mysql_fetch_array($data);
+			$data = mysqli_query($this->db_connection, $strSQL);
+			$row = mysqli_fetch_array($data);
 			return $row[0];
 		}
 	}

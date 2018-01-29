@@ -8,11 +8,11 @@ if (isset($_POST['action']))
 	{
 		case 'savePerm':
 			$strSQL = sprintf("REPLACE INTO `permissions` SET `ID` = %u, `permName` = '%s', `permKey` = '%s'",$_POST['permID'],$_POST['permName'],$_POST['permKey']);
-			mysql_query($strSQL);
+			mysqli_query($link, $strSQL);
 		break;
 		case 'delPerm':
 			$strSQL = sprintf("DELETE FROM `permissions` WHERE `ID` = %u LIMIT 1",$_POST['permID']);
-			mysql_query($strSQL);
+			mysqli_query($link, $strSQL);
 		break;
 	}
 	header("location: perms.php");
@@ -32,9 +32,9 @@ if ($myACL->hasPermission('access_admin') != true)
 <div id="header"></div>
 <div id="adminButton"><a href="../">Main Screen</a> | <a href="index.php">Admin Home</a></div>
 <div id="page">
-	<? if ($_GET['action'] == '') { ?>
+	<?php if (!isset($_GET['action'])) { ?>
     	<h2>Select a Permission to Manage:</h2>
-        <? 
+        <?php
 		$roles = $myACL->getAllPerms('full');
 		foreach ($roles as $k => $v)
 		{
@@ -45,29 +45,29 @@ if ($myACL->hasPermission('access_admin') != true)
 			echo "No permissions yet.<br />";
 		} ?>
         <input type="button" name="New" value="New Permission" onclick="window.location='?action=perm'" />
-    <? } 
-    if ($_GET['action'] == 'perm') { 
-		if ($_GET['permID'] == '') { 
+    <?php } 
+    if (!isset($_GET['action'])) { 
+		if (!isset($_GET['permID'])) { 
 		?>
     	<h2>New Permission:</h2>
-        <? } else { ?>
-    	<h2>Manage Permission: (<?= $myACL->getPermNameFromID($_GET['permID']); ?>)</h2><? } ?>
+        <?php } else { ?>
+    	<h2>Manage Permission: (<?= $myACL->getPermNameFromID(isset($_GET['permID']) ? : ""); ?>)</h2><?php } ?>
         <form action="perms.php" method="post">
-        	<label for="permName">Name:</label><input type="text" name="permName" id="permName" value="<?= $myACL->getPermNameFromID($_GET['permID']); ?>" maxlength="30" /><br />
-            <label for="permKey">Key:</label><input type="text" name="permKey" id="permKey" value="<?= $myACL->getPermKeyFromID($_GET['permID']); ?>" maxlength="30" /><br />
+        	<label for="permName">Name:</label><input type="text" name="permName" id="permName" value="<?= isset($_GET['permID']) ? $myACL->getPermNameFromID($_GET['permID']) : ''; ?>" maxlength="30" /><br />
+            <label for="permKey">Key:</label><input type="text" name="permKey" id="permKey" value="<?= isset($_GET['permID']) ? $myACL->getPermKeyFromID($_GET['permID']) : ''; ?>" maxlength="30" /><br />
     	<input type="hidden" name="action" value="savePerm" />
-        <input type="hidden" name="permID" value="<?= $_GET['permID']; ?>" />
+        <input type="hidden" name="permID" value="<?= isset($_GET['permID']) ? $_GET['permID'] : ''; ?>" />
     	<input type="submit" name="Submit" value="Submit" />
     </form>
     <form action="perms.php" method="post">
          <input type="hidden" name="action" value="delPerm" />
-         <input type="hidden" name="permID" value="<?= $_GET['permID']; ?>" />
+         <input type="hidden" name="permID" value="<?= isset($_GET['permID']) ? $_GET['permID'] : ''; ?>" />
     	<input type="submit" name="Delete" value="Delete" />
     </form>
     <form action="perms.php" method="post">
     	<input type="submit" name="Cancel" value="Cancel" />
     </form>
-    <? } ?>
+    <?php } ?>
 </div>
 </body>
 </html>

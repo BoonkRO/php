@@ -1,7 +1,9 @@
 <?php 
 include("../assets/php/database.php"); 
 include("../assets/php/class.acl.php");
-$myACL = new ACL();
+
+$userID = isset($_GET['userID']) ? $_GET['userID'] : "" ;
+$myACL = new ACL($userID);
 if ($myACL->hasPermission('access_admin') != true)
 {
 	header("location: ../index.php");
